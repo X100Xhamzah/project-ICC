@@ -1,0 +1,1173 @@
+[
+    {
+        "id": "tab_iot_dash",
+        "type": "tab",
+        "label": "IoT Dashboard (HTTP+MQTT)",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "25761fd66ddbe05c",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare SQL insert",
+        "func": "\n\nmsg.topic = `\nINSERT INTO measurements (\nnode_id,\ntemperature,\nvibration,\nstatus,\ntimestamp\n) VALUES ('${msg.payload.node_id}', '${msg.payload.temperature}', '${msg.payload.vibration}', '${msg.payload.status}', '${msg.payload.timestamp}')\n`;\n\nmsg.payload = [\n    msg.payload.node_id,\n    msg.payload.temperature,\n    msg.payload.vibration,\n    msg.payload.status,\n    msg.payload.timestamp\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1310,
+        "y": 140,
+        "wires": [
+            [
+                "6ff3eb122771014a"
+            ]
+        ]
+    },
+    {
+        "id": "bcd1da1352b27daa",
+        "type": "mqtt in",
+        "z": "tab_iot_dash",
+        "name": "",
+        "topic": "sensors/data",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "8c7c5a0c07aab3f7",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 430,
+        "y": 240,
+        "wires": [
+            [
+                "76e8ac11c025f95e"
+            ]
+        ]
+    },
+    {
+        "id": "76e8ac11c025f95e",
+        "type": "json",
+        "z": "tab_iot_dash",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 630,
+        "y": 240,
+        "wires": [
+            [
+                "aecda7b29315d95b"
+            ]
+        ]
+    },
+    {
+        "id": "aecda7b29315d95b",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Normalize + timestamp",
+        "func": "const data = msg.payload;\n\nmsg.payload = {\n  node_id: data.node_id ?? \"unknown\",\n  temperature: data.temperature ?? \"unknown\",\n  vibration: data.vibration ?? \"unknown\",\n  status: data.status ?? \"UNKNOWN\" ,\n  timestamp: new Date().toISOString()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 240,
+        "wires": [
+            [
+                "25761fd66ddbe05c",
+                "e88084708838842d",
+                "d0344bc0040c77e1"
+            ]
+        ]
+    },
+    {
+        "id": "682325a32fa95789",
+        "type": "debug",
+        "z": "tab_iot_dash",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "vibration",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1280,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "6ff3eb122771014a",
+        "type": "sqlite",
+        "z": "tab_iot_dash",
+        "mydb": "d4b3d0ce9b3e9d57",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "SQLite",
+        "x": 1530,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e88084708838842d",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare dashboard",
+        "func": "\nmsg.topic = msg.payload.node_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1310,
+        "y": 240,
+        "wires": [
+            [
+                "e04041cfe074673b",
+                "75a1af8dc7d4f60b",
+                "cf702212e645a7d9"
+            ]
+        ]
+    },
+    {
+        "id": "e04041cfe074673b",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Temp value",
+        "func": "msg.topic = msg.payload.node_id;\nmsg.payload = msg.payload.temperature;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1550,
+        "y": 240,
+        "wires": [
+            [
+                "958a1ed29e5527ed"
+            ]
+        ]
+    },
+    {
+        "id": "75a1af8dc7d4f60b",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Vibration value",
+        "func": "msg.payload = msg.payload.vibration;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 300,
+        "wires": [
+            [
+                "12831a7ca6dee3e8"
+            ]
+        ]
+    },
+    {
+        "id": "cf702212e645a7d9",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Status value",
+        "func": "\nmsg.payload = \n{\n    node: msg.payload.node_id,\n    status: msg.payload.status\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1550,
+        "y": 360,
+        "wires": [
+            [
+                "bcdd2b349f8f26dc"
+            ]
+        ]
+    },
+    {
+        "id": "d0344bc0040c77e1",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Register ESPs",
+        "func": "let espList = flow.get(\"espList\") || [];\nconst id = msg.payload.node_id;\n\nif (typeof id !== \"string\") {\n    return null;\n}\n\nif (!espList.includes(id)){\n    espList.push(id);\n    flow.set(\"espList\", espList);\n}\nmsg.ui = {\n    options: {\n        node_id: espList.map(id => ({\n            label:id,\n            value:id\n        }))\n    }\n};\n\nmsg.payload = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1080,
+        "y": 440,
+        "wires": [
+            [
+                "d468e5aa8124a169"
+            ]
+        ]
+    },
+    {
+        "id": "12831a7ca6dee3e8",
+        "type": "ui-chart",
+        "z": "tab_iot_dash",
+        "group": "1427437f7b555c2b",
+        "name": "Trilling",
+        "label": "chart",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "linear",
+        "xAxisFormat": "",
+        "xAxisFormatType": "custom",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 9,
+        "height": 9,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1810,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bcdd2b349f8f26dc",
+        "type": "ui-template",
+        "z": "tab_iot_dash",
+        "group": "0230462c8b094b20",
+        "page": "",
+        "ui": "",
+        "name": "Status",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<script>\n(function(scope) {\n  scope.$watch('msg', function(msg) {\n    if (!msg || !msg.payload) return;\n    const status = msg.payload.status;\n\n    if (status === \"OK\") {\n      document.getElementById(\"p2\").style.color = \"green\";\n    } else {\n      document.getElementById(\"p2\").style.color = \"red\";\n    }\n  });(scope);\n})\n\n</script>\n\n<div id=\"p2\" style=\"\npadding:10px;\nfont-size:18px;\nfont-weight:bold;\n\">\n    {{msg.payload.node}} : {{msg.payload.status}}\n</div>\n</br>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1810,
+        "y": 360,
+        "wires": [
+            [
+                "cabbc8b9316bca0e"
+            ]
+        ]
+    },
+    {
+        "id": "958a1ed29e5527ed",
+        "type": "ui-chart",
+        "z": "tab_iot_dash",
+        "group": "22b17110c0d4f034",
+        "name": "Temperartuur",
+        "label": "chart",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "linear",
+        "xAxisFormat": "",
+        "xAxisFormatType": "custom",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 12,
+        "height": 9,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1830,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "753574cd4a425c99",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare SQL history",
+        "func": "const esp = msg.payload.selected_esp;\n\nmsg.selected_esp = esp;\n\nmsg.topic = `\nSELECT *\nFROM measurements\nWHERE node_id = '${esp}'\nORDER BY timestamp DESC\nLIMIT 500\n`;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1540,
+        "y": 440,
+        "wires": [
+            [
+                "21ea4689076e0e85",
+                "11c8e4fae6a4f622"
+            ]
+        ]
+    },
+    {
+        "id": "21ea4689076e0e85",
+        "type": "sqlite",
+        "z": "tab_iot_dash",
+        "mydb": "d4b3d0ce9b3e9d57",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "SQL READ",
+        "x": 1790,
+        "y": 440,
+        "wires": [
+            [
+                "63cc3d4256a73863",
+                "3f8dd9b9160a4264"
+            ]
+        ]
+    },
+    {
+        "id": "63cc3d4256a73863",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare history chart",
+        "func": "const rows = msg.payload;\nif (!Array.isArray(rows)) return null;\n\nmsg.topic = msg.selected_esp\n\nrows.forEach(r => {\n    node.send({\n        topic: msg.selected_esp,\n        payload: Number(r.temperature),\n        timestamp: new Date(r.timestamp).getTime()\n    });\n});\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1540,
+        "y": 600,
+        "wires": [
+            [
+                "382b6efa8938ba8a"
+            ]
+        ]
+    },
+    {
+        "id": "d468e5aa8124a169",
+        "type": "ui-form",
+        "z": "tab_iot_dash",
+        "name": "",
+        "group": "cb7650ebc57d70eb",
+        "label": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "ESP",
+                "key": "selected_esp",
+                "type": "dropdown",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "selected_esp": ""
+        },
+        "payload": "",
+        "submit": "submit",
+        "cancel": "clear",
+        "resetOnSubmit": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "passthru": false,
+        "dropdownOptions": [
+            {
+                "dropdown": "selected_esp",
+                "value": "esp01",
+                "label": "esp01"
+            },
+            {
+                "dropdown": "selected_esp",
+                "value": "esp02",
+                "label": "esp02"
+            }
+        ],
+        "x": 1290,
+        "y": 440,
+        "wires": [
+            [
+                "753574cd4a425c99"
+            ]
+        ]
+    },
+    {
+        "id": "11c8e4fae6a4f622",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare SQL history",
+        "func": "msg.payload = [];\nmsg.reset = true;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1540,
+        "y": 500,
+        "wires": [
+            [
+                "382b6efa8938ba8a",
+                "8d0a591ec5fe647c"
+            ]
+        ]
+    },
+    {
+        "id": "89a4e101f0248187",
+        "type": "ui-form",
+        "z": "tab_iot_dash",
+        "name": "Export Data",
+        "group": "6eb0636ecce25d69",
+        "label": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "ESP",
+                "key": "selected_esp",
+                "type": "dropdown",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Van",
+                "key": "from_date",
+                "type": "date",
+                "required": false,
+                "rows": null
+            },
+            {
+                "label": "Tot",
+                "key": "to_date",
+                "type": "date",
+                "required": false,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "selected_esp": "",
+            "from_date": "",
+            "to_date": ""
+        },
+        "payload": "",
+        "submit": "submit",
+        "cancel": "clear",
+        "resetOnSubmit": true,
+        "topic": "export",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "passthru": false,
+        "dropdownOptions": [
+            {
+                "dropdown": "selected_esp",
+                "value": "esp01",
+                "label": "esp01"
+            },
+            {
+                "dropdown": "selected_esp",
+                "value": "esp02",
+                "label": "esp02"
+            }
+        ],
+        "x": 430,
+        "y": 800,
+        "wires": [
+            [
+                "4668d4c8e716106d"
+            ]
+        ]
+    },
+    {
+        "id": "4668d4c8e716106d",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare export SQL",
+        "func": "const esp = msg.payload.selected_esp;\nconst van = msg.payload.from_date;\nconst tot = msg.payload.to_date;\n\nmsg.topic = `\nSELECT node_id, temperature, vibration, status, timestamp\nFROM measurements\nWHERE node_id = '${esp}'\nAND timestamp >= '${van}T00:00:00Z'\nAND timestamp <= '${tot}T23:59:59Z'\nORDER BY timestamp ASC\n`;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 800,
+        "wires": [
+            [
+                "0897b4b546c13ffa"
+            ]
+        ]
+    },
+    {
+        "id": "0897b4b546c13ffa",
+        "type": "sqlite",
+        "z": "tab_iot_dash",
+        "mydb": "d4b3d0ce9b3e9d57",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "SQL READ",
+        "x": 930,
+        "y": 800,
+        "wires": [
+            [
+                "0543b206b31df179"
+            ]
+        ]
+    },
+    {
+        "id": "0543b206b31df179",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare CSV data",
+        "func": "msg.payload = msg.payload.map(r => ({\n    node_id: r.node_id,\n    temperature: r.temperature,\n    vibration: r.vibration,\n    status: r.status,\n    timestamp: r.timestamp\n}));\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 800,
+        "wires": [
+            [
+                "eaa46f62b1860fb3"
+            ]
+        ]
+    },
+    {
+        "id": "eaa46f62b1860fb3",
+        "type": "csv",
+        "z": "tab_iot_dash",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": false,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "node_id,temperature,vibration,status,timestamp",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": false,
+        "include_null_values": false,
+        "x": 1370,
+        "y": 800,
+        "wires": [
+            [
+                "1ddf700f141f422c"
+            ]
+        ]
+    },
+    {
+        "id": "81bca43adb071169",
+        "type": "ui-template",
+        "z": "tab_iot_dash",
+        "group": "",
+        "page": "486f3456eb6a2c22",
+        "ui": "",
+        "name": "",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n    <div></div>\n</template>\n\n<script>\nexport default {\n    watch: {\n        msg: {\n            handler(msg) {\n                if (!msg || msg.download !== true) return;\n                if (!msg.payload || !msg.payload.href) return;\n                \n                const a = document.createElement(\"a\");\n                \n                a.href = msg.payload.href;\n                a.download = msg.payload.filename || \"export.csv\";\n                \n                document.body.appendChild(a);\n                a.click();\n                document.body.removeChild(a);\n            },\n            deep: true\n        }\n    }\n}\n</script>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "widget:page",
+        "className": "",
+        "x": 1800,
+        "y": 800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1ddf700f141f422c",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare download",
+        "func": "const csv = msg.payload;\nconst encoded = encodeURIComponent(csv);\n\nmsg.payload = {\n    href: `data:text/csv;charset=utf-8,${encoded}`,\n    filename: \"export.csv\"\n}\n\nmsg.download = true;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1590,
+        "y": 800,
+        "wires": [
+            [
+                "81bca43adb071169"
+            ]
+        ]
+    },
+    {
+        "id": "cabbc8b9316bca0e",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "repare dshboard alaram ",
+        "func": "msg.payload = {\n    alarm: msg.payload.status !== \"OK\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2050,
+        "y": 360,
+        "wires": [
+            [
+                "41e0f9d1cb67e40a"
+            ]
+        ]
+    },
+    {
+        "id": "41e0f9d1cb67e40a",
+        "type": "ui-template",
+        "z": "tab_iot_dash",
+        "group": "",
+        "page": "621b72a71b7fea3c",
+        "ui": "",
+        "name": "",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<div></div>\n\n<script>\n\n(function(scope) {\n\n    const sound = new Audio(\"https://actions.google.com/sounds/v1/alarms/beep_short.ogg\");\n    shound.loop = true;\n\n    scope.$watch('msg', function(msg) {\n        if (!msg || !msg.payload) return;\n\n        if(msg.payload.alarm ===true) {\n            sound.play().catch(() => {});\n        } else {\n            sound.pause();\n            sound.currentTime = 0;\n        }\n    });\n})(scope);\n\n</script>",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "widget:page",
+        "className": "",
+        "x": 2260,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "382b6efa8938ba8a",
+        "type": "ui-chart",
+        "z": "tab_iot_dash",
+        "group": "cb7650ebc57d70eb",
+        "name": "Temperartuur",
+        "label": "Temperartuur",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "{HH}:{mm}:{ss}",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "1000",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 12,
+        "height": 9,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1790,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3f8dd9b9160a4264",
+        "type": "function",
+        "z": "tab_iot_dash",
+        "name": "Prepare history chart",
+        "func": "const rows = msg.payload;\nif (!Array.isArray(rows)) return null;\n\nmsg.topic = msg.selected_esp\n\nrows.forEach(r => {\n    node.send({\n        topic: msg.selected_esp,\n        payload: Number(r.vibration),\n        timestamp: new Date(r.timestamp).getTime()\n    });\n});\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1540,
+        "y": 660,
+        "wires": [
+            [
+                "8d0a591ec5fe647c"
+            ]
+        ]
+    },
+    {
+        "id": "8d0a591ec5fe647c",
+        "type": "ui-chart",
+        "z": "tab_iot_dash",
+        "group": "cb7650ebc57d70eb",
+        "name": "Trilling",
+        "label": "Trilling",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "{HH}:{mm}:{ss}",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "1000",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 12,
+        "height": 9,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1770,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2ebe99f59f57164e",
+        "type": "ui_spacer",
+        "z": "tab_iot_dash",
+        "name": "spacer",
+        "group": "",
+        "order": 4,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "8c7c5a0c07aab3f7",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "d4b3d0ce9b3e9d57",
+        "type": "sqlitedb",
+        "db": "/home/tymon/data/sensors.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "1427437f7b555c2b",
+        "type": "ui-group",
+        "name": "Trilling",
+        "page": "621b72a71b7fea3c",
+        "width": 9,
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "0230462c8b094b20",
+        "type": "ui-group",
+        "name": "Status",
+        "page": "621b72a71b7fea3c",
+        "width": 19,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": true,
+        "disabled": false,
+        "groupType": "default"
+    },
+    {
+        "id": "22b17110c0d4f034",
+        "type": "ui-group",
+        "name": "Tempartuur",
+        "page": "621b72a71b7fea3c",
+        "width": 10,
+        "height": "1",
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "cb7650ebc57d70eb",
+        "type": "ui-group",
+        "name": "Historische data",
+        "page": "3d9e0a0a3a5fa9eb",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "6eb0636ecce25d69",
+        "type": "ui-group",
+        "name": "Export data",
+        "page": "486f3456eb6a2c22",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "486f3456eb6a2c22",
+        "type": "ui-page",
+        "name": "Export",
+        "ui": "8a8e5c42d07b03d7",
+        "path": "/export",
+        "icon": "export",
+        "layout": "grid",
+        "theme": "4af4352a354acb95",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 3,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "621b72a71b7fea3c",
+        "type": "ui-page",
+        "name": "Data Dashboard",
+        "ui": "8a8e5c42d07b03d7",
+        "path": "/data",
+        "icon": "gauge",
+        "layout": "flex",
+        "theme": "5ae8613757b62f89",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "2"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "2"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "2"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "2"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "3d9e0a0a3a5fa9eb",
+        "type": "ui-page",
+        "name": "Historie",
+        "ui": "8a8e5c42d07b03d7",
+        "path": "/historie",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "4af4352a354acb95",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 2,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "8a8e5c42d07b03d7",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": false,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "4af4352a354acb95",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094CE",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "5ae8613757b62f89",
+        "type": "ui-theme",
+        "name": "Theme Name",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094ce",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px",
+            "density": "default"
+        }
+    },
+    {
+        "id": "a39f5c67356f5cfb",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-sqlite": "1.1.1",
+            "@flowfuse/node-red-dashboard": "1.30.2",
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
